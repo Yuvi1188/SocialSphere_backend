@@ -8,21 +8,12 @@ const socketHandler = require('./socket');
 
 const app = express();
 const server = http.createServer(app);
-const port = process.env.PORT;
+const port = process.env.PORT || 8000; // Default to 8000 if PORT is not provided
 
 dB();
 
- 
-
-// Specify CORS options to allow access only from your frontend URL
-const corsOptions = {
-    origin: 'https://social-sphere-frontend-beige.vercel.app',
-    // Additional options like methods, allowedHeaders, etc. can be specified if needed
-};
-
-app.use(cors(corsOptions)); // Use CORS middleware with custom options
- // Use CORS middleware with custom options
-app.options('*', cors(corsOptions)); // Enable preflight requests for all routes
+// CORS middleware to allow all origins
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -43,5 +34,5 @@ app.use((err, req, res, next) => {
 socketHandler(server);
 
 server.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });

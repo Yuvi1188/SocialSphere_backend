@@ -12,12 +12,18 @@ const port = process.env.PORT;
 
 dB();
 
-// Specify CORS options to allow access only from 'http://localhost:5173'
+ 
+
+// Specify CORS options to allow access only from your frontend URL
 const corsOptions = {
-    origin: 'https://social-sphere-frontend-beige.vercel.app/',
+    origin: 'https://social-sphere-frontend-beige.vercel.app',
+    // Additional options like methods, allowedHeaders, etc. can be specified if needed
 };
 
 app.use(cors(corsOptions)); // Use CORS middleware with custom options
+ // Use CORS middleware with custom options
+app.options('*', cors(corsOptions)); // Enable preflight requests for all routes
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

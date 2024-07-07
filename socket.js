@@ -41,9 +41,12 @@ const socketHandler = (server) => {
                     const uploadResult = await cloudinary.uploader.upload(messageData.document, {
                         folder: 'chat_documents',
                     });
-                    newMessage.document = uploadResult.secure_url;
+                    newMessage.document = {
+                        public_id: uploadResult.public_id,
+                        url: uploadResult.secure_url
+                    };
                 }
-
+        
                 await newMessage.save();
                 const message = await newMessage.populate('sender', 'fullName userImgUrl');
                 await Chat.findByIdAndUpdate(chatId, { latestMessage: message._id }, { new: true })
@@ -55,7 +58,7 @@ const socketHandler = (server) => {
                             select: 'fullName userImgUrl',
                         },
                     });
-
+                    console.log(message);
                 io.to(chatId).emit('receiveMessage', message);
             } catch (error) {
                 console.error(error);

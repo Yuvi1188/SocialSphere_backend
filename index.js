@@ -14,7 +14,7 @@ dB();
 
 // Specify CORS options to allow access only from 'http://localhost:5173'
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: 'https://social-sphere-frontend-beige.vercel.app/',
 };
 
 app.use(cors(corsOptions)); // Use CORS middleware with custom options

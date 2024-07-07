@@ -8,7 +8,7 @@ const cloudinary = require('cloudinary').v2;
 const socketHandler = (server) => {
     const io = socketIo(server, {
         cors: {
-            origin: 'https://social-sphere-frontend-beige.vercel.app/',
+            origin: '*',
         },
     });
 

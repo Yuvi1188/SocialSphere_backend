@@ -4,7 +4,10 @@ const fs = require('fs');
 const User = require('../models/user');
 const cloudinary = require('../config/cloudinary');
 const path = require('path')
-
+const nodemailer = require('nodemailer');
+ const OTP = require('../models/OTP')
+ require('dotenv').config();
+ const crypto = require('crypto');
 
 // Controller function to check if the user is new
 module.exports.isNewUser = async function (req, res) {
@@ -205,3 +208,105 @@ module.exports.getSearchResults = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch search results', error: error.message });
     }
 };
+
+
+  
+
+// Configure Nodemailer (update with your email service details)
+const transporter = nodemailer.createTransport({
+    service: 'Gmail', // or other service provider
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Controller function to send OTP
+module.exports.sendOtp = async (req, res) => {
+    const { email } = req.body;
+  console.log(email);
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    try {
+        // Find the user by email
+        // Generate OTP
+        var otp = crypto.randomInt(100000, 999999).toString(); // Generate a 6-digit OTP
+        
+
+        // Save the OTP in the database
+        const newOtp = new OTP({
+            email,
+            otp
+        });
+
+        await newOtp.save();
+
+        // Send OTP via email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to:   email,
+            subject: 'SocialSphere OTP Verification',
+            text: `Your OTP code is ${otp}. It will expire in 15 minutes.`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({success:true, message: 'OTP sent successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success:false, error: 'An error occurred while sending OTP' });
+    }
+};
+
+
+// Controller function to verify OTP
+module.exports.verifyOtp = async (req, res) => {
+    var {otp,email } = req.body;
+      console.log(typeof otp);
+      console.log(email);
+    if (!otp||!email) {
+        return res.status(400).json({ error: 'OTP is required' });
+    }
+    try {
+        // Find the OTP record in the database
+        const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+        console.log(response);
+       console.log(response[0].otp);
+        if (response.length === 0) {
+            // OTP not found for the email
+            console.log("bh")
+            return res.status(400).json({
+              success: false,
+              message: "The OTP is not valid",
+            })
+          } 
+          else if (otp !== response[0].otp) {
+            // Invalid OTP
+            console.log("bh1")
+
+            return res.status(400).json({
+              success: false,
+              message: "The OTP is not valid",
+            })
+          }
+          else{ 
+            console.log("bh2")
+
+            return res.status(200).json({
+                success: true,
+                message: "Your OTP verification is successfully",
+              })
+          }
+         
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while verifying OTP' });
+    }
+};
+
+ 
+
+ 

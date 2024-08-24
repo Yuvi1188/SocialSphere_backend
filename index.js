@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Use file upload middleware after body parsing middleware
-app.use(fileUpload({ limits: { fileSize: 100 * 1024 * 1024 } }));
+app.use(fileUpload({ limits: { fileSize: 200 * 1024 * 1024 } }));
 
 // Routes
 app.use('/', require('./routes'));

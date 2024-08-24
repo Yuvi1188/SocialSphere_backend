@@ -32,7 +32,6 @@ module.exports.getPosts = async (req, res) => {
     }
 };
 
-
 module.exports.createPost = async (req, res) => {
     const { caption, userId } = req.body;
     const { file: postFile } = req.files;
@@ -96,3 +95,36 @@ module.exports.createPost = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+// Delete Post Controller
+module.exports.deletePost = async (req, res) => {
+    const { postId } = req.params;
+     
+
+    const { userId } = req.body;
+     // Assuming you have user authentication and `req.user` is populated
+
+    try {
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Check if the user is authorized to delete the post (optional, based on your auth logic
+
+        // Delete media from Cloudinary
+        if (post.mediaUrl && post.mediaUrl.public_id) {
+            await cloudinary.uploader.destroy(post.mediaUrl.public_id, { resource_type: post.isReel ? 'video' : 'image' });
+        }
+
+        // Delete the post from the database
+        await Post.findByIdAndDelete(postId);  // Use this method to delete the post
+
+        return res.status(200).json({ message: "Post deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+

@@ -8,21 +8,31 @@ const cloudinary = require('../config/cloudinary');
 
 exports.getStories = async (req, res) => {
     const { userId } = req.query;
-    console.log(userId)
+
     try {
+        // Find the user's followings
         const following = await Follow.findOne({ user: userId }).populate('followings');
+
+        // Find the stories of the user
         const userStories = await Story.find({ user: userId }).populate('user', 'username userImgUrl');
-        const followingStories = await Story.find({ user: { $in: following.followings } }).populate('user', 'username userImgUrl');
+
+        // Find the stories of the users they are following
+        const followingStories = following
+            ? await Story.find({ user: { $in: following.followings } }).populate('user', 'username userImgUrl')
+            : [];
 
         // Combine user's stories and following users' stories
         const stories = [...userStories, ...followingStories];
 
-        console.log(stories)
-        res.status(200).json(stories);
+        console.log(stories);
+
+        // If no stories are found, return an empty array
+        res.status(200).json(stories.length ? stories : []);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 
 exports.uploadStory = async (req, res) => {
